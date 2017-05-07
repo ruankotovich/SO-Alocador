@@ -7,7 +7,6 @@
 #define CHAR_LENGTH_IN_BYTES (sizeof(char))
 #define throw_exception(x) printf("\n[ERROR] ");printf(x);printf("\n");
 
-
 //* FreeMemorySpace FUNCTIONS *//
 
 int FreeMemorySpaceFrame::getFirstFreeSpace(unsigned short length){
@@ -15,10 +14,11 @@ int FreeMemorySpaceFrame::getFirstFreeSpace(unsigned short length){
 
     FreeMemorySpace* current = this->first;
     FreeMemorySpace* last = nullptr;
-    int pointer =0;
+
+    int pointer = 0;
+
     if(length){
         while(current){
-
             if(current->length < realLength){
                 current = current->next;
             }else if(current->length == realLength){
@@ -46,32 +46,60 @@ int FreeMemorySpaceFrame::getFirstFreeSpace(unsigned short length){
     return -1;
 }
 
-// I lost this function
-void FreeMemorySpaceFrame::freeSpace(int address, unsigned short end){
-    FreeMemorySpace *currentSpace = this->first, *lastSpace = nullptr;
-    int bottomBound = address, topBound = (address+end+REAL_LENGTH_IN_BYTES);
-    bool frontMoved=false;
+void FreeMemorySpaceFrame::freeSpace(int address, unsigned short size){
+    FreeMemorySpace *currentSpace = this->first, *previousSpace = nullptr;
+    int bottomAddressBound = address, topAddress = (address+size);
+    FreeMemorySpace *coalsceFront = nullptr;
+    FreeMemorySpace *coalsceBack = nullptr;
+    FreeMemorySpace *newSpace;
+    /*
 
-    if(this->first != nullptr){
+    */
 
-        while(currentSpace){
+    while (currentSpace) {
 
-            if(currentSpace->address >= address){
-
-                if(currentSpace->address == topBound){
-                    currentSpace->address=address;
-                    currentSpace->length+=end+REAL_LENGTH_IN_BYTES;
-                    frontMoved = true;
-                }
-
-                break;
-            }else{
-                lastSpace = currentSpace;
-                currentSpace = currentSpace->next;
+        if (currentSpace->address >= address) {
+            if (currentSpace->address == topAddress) {
+                coalsceFront = currentSpace;
             }
+            break;
         }
 
+        previousSpace = currentSpace;
+
+        if ((currentSpace->address + currentSpace->length) == bottomAddressBound) {
+            coalsceBack = currentSpace;
+        }
+
+        currentSpace = currentSpace->next;
     }
+
+    if (coalsceBack == nullptr) { // não tem o de trás
+        if (coalsceFront == nullptr) { // não tem o de trás nem o da frente
+            newSpace = new FreeMemorySpace(address, size);
+            if(previousSpace){
+                previousSpace->next = newSpace;
+            }else{
+                this->first = newSpace;
+            }
+
+            newSpace->next = currentSpace? currentSpace : nullptr;
+        }
+        else { // não tem o de trás mas tem o da frente
+            coalsceFront->length+=size;
+            coalsceFront->address=address;
+        }
+    }else { // tem o de trás
+        if (coalsceFront == nullptr) { // tem o de trás mas não o da frente
+            coalsceBack->length+=size;
+        }
+        else { // tem o de trás e o da frente
+            coalsceBack->length+=(size+coalsceFront->length);
+            coalsceBack->next = coalsceFront->next;
+            delete(coalsceFront);
+        }
+    }
+
 }
 
 FreeMemorySpace::FreeMemorySpace(int address_fms, unsigned short length_fms){
