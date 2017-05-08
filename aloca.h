@@ -13,6 +13,8 @@ struct FreeMemorySpaceFrame{
 	FreeMemorySpace *first;
 	int fragments;
 	int getFirstFreeSpace(unsigned short length);
+	int getNextFreeSpace(unsigned short length);
+	int getBestFreeSpace(unsigned short length);
 	void freeSpace(int address, unsigned short length);
 	FreeMemorySpaceFrame();
 };

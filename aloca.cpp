@@ -9,6 +9,54 @@
 
 //* FreeMemorySpace FUNCTIONS *//
 
+int FreeMemorySpaceFrame::getBestFreeSpace(unsigned short length){
+  FreeMemorySpace* current = this->first;
+  FreeMemorySpace* currentBest = current, *last = nullptr, *lastBest = nullptr;
+  int realLength = length+REAL_LENGTH_IN_BYTES;
+  int pointer=0;
+
+  if(this->first != nullptr){
+    while(current){
+
+      if(currentBest->length > current->length){
+        if(current->length >= realLength){
+          lastBest = last;
+          currentBest = current;
+        }
+      }
+
+      last = current;
+      current = current->next;
+    }
+
+    if(currentBest->length == realLength){
+
+      if(lastBest){
+        pointer = currentBest->address;
+        lastBest->next = currentBest->next;
+      }else{
+        this->first = currentBest->next;
+        pointer = currentBest->address;
+      }
+
+      delete(currentBest);
+
+      return pointer;
+
+    }else if(currentBest->length > realLength){
+      pointer = currentBest->address;
+      currentBest->address+=realLength;
+      currentBest->length-=realLength;
+
+      return pointer;
+    }else{
+      return -1;
+    }
+  }
+  return -1;
+
+}
+
 int FreeMemorySpaceFrame::getFirstFreeSpace(unsigned short length){
   int realLength = length+REAL_LENGTH_IN_BYTES;
 
@@ -52,9 +100,6 @@ void FreeMemorySpaceFrame::freeSpace(int address, unsigned short size){
   FreeMemorySpace *coalsceFront = nullptr;
   FreeMemorySpace *coalsceBack = nullptr;
   FreeMemorySpace *newSpace;
-  /*
-
-  */
 
   while (currentSpace) {
 
@@ -178,7 +223,18 @@ char *aloca_ff(int tamanho, char* memory, FreeMemorySpaceFrame& frame){
 }
 
 char *aloca_bf(int tamanho, char* memory, FreeMemorySpaceFrame& frame){
-  return nullptr;
+  int pointer = (frame.getBestFreeSpace(tamanho));
+
+  if(pointer<0){
+    throw_exception("OUT OF MEMORY");
+    return ((char*)(memory-1));
+  }else{
+    shortOnMemory(tamanho, memory, pointer);
+    shortOnMemory(HASH, memory, pointer+REAL_LENGTH_IN_BYTES_INDIVIDUAL);
+
+    pointer+=REAL_LENGTH_IN_BYTES;
+    return ((char*)(pointer+memory));
+  }
 }
 
 char *aloca_nf(int tamanho, char* memory, FreeMemorySpaceFrame& frame){
