@@ -20,7 +20,7 @@ struct FreeMemorySpaceFrame{
 };
 
 class meualoc{
-	int length;\
+	int length;
 	char* memoria; //char* pois eh byte a byte
 	char*(*aloca_backend)(int tamanho, char* memory, FreeMemorySpaceFrame &frame);
 	FreeMemorySpaceFrame memoryFrame;
