@@ -18,7 +18,7 @@ struct FreeMemorySpaceFrame{
 };
 
 class meualoc{
-	int length;
+	int length;\
 	char* memoria; //char* pois eh byte a byte
 	char*(*aloca_backend)(int tamanho, char* memory, FreeMemorySpaceFrame &frame);
 	FreeMemorySpaceFrame memoryFrame;
@@ -31,8 +31,7 @@ public:
 	char *aloca(unsigned short int tamanho);
 
 	//Verifica se a posicao dada pelo ponteiro esta alocada
-	char* verifica(int ponteiro);
-	char* verifica(int ponteiro,int posicao);
+	char* verifica(char* ponteiro,int posicao=0);
 
 	//Libera o espaco ocupado na posicao, de forma analoga ao free. Ou seja, liberar toda a memoria alocada para este ponteiro na funcao aloca.
 	int libera(char* ponteiro);
