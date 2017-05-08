@@ -1,17 +1,24 @@
 #include "aloca.h"
 #include <iostream>
+#include <map>
 
 int main(){
-  meualoc alocador(40,BESTFIT);
-  char* alocacoes[10];
+  int amount, algorithm, operations;
+  std::cin >> amount >> algorithm >> operations;
+
+  meualoc alocador(amount,algorithm);
+  std::map<int, char*> alocacoes;
+
   char command; int address,length;
 
-  while(std::cin >> command){
+  while(std::cin >> command && operations){
+    --operations;
     switch(command){
       case 'A':
       std::cin >> address >> length;
       alocacoes[address] = alocador.aloca(length);
       break;
+      case 'S':
       case 'F':
       std::cin >> address;
       alocador.libera(alocacoes[address]);
