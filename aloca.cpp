@@ -94,6 +94,52 @@ int FreeMemorySpaceFrame::getFirstFreeSpace(unsigned short length){
   return -1;
 }
 
+int FreeMemorySpaceFrame::getNextFreeSpace(unsigned short length) {
+  int realLength = length + REAL_LENGTH_IN_BYTES;
+
+  FreeMemorySpace *current = this->lastFound;
+  FreeMemorySpace *pivot = this->lastFound;
+  FreeMemorySpace *last = this->beforeLastFound;
+  int pointer = 0;
+
+  if (length) {
+    do {
+      if (current->length < realLength){
+        this->beforeLastFound = current;
+
+        if (current->next)
+          current = current->next;
+        else current = this->first;
+
+      } else if (current->length == realLength) {
+        pointer = current->address;
+
+        if (this->beforeLastFound){
+          this->beforeLastFound->next = current->next;
+        } else {
+          this->first = current->next;
+        }
+
+        lastFound = current->next? current : this->first;
+        printf("\n\nLast Found for Next-Fit: [address: %d, length : %d]\n\n", lastFound->address, lastFound->length);
+        delete(current);
+
+        return pointer;
+      } else {
+        pointer = current->address;
+        current->address+=realLength;
+        current->length-=realLength;
+
+        lastFound = current->next? current : this->first;
+        printf("\n\nLast Found for Next-Fit: [address: %d, length : %d]\n\n", lastFound->address, lastFound->length);
+        return pointer;
+      }
+    } while (current != pivot);
+  }
+
+  return -1;
+}
+
 void FreeMemorySpaceFrame::freeSpace(int address, unsigned short size){
   FreeMemorySpace *currentSpace = this->first, *previousSpace = nullptr;
   int bottomAddressBound = address, topAddress = (address+size);
@@ -238,7 +284,18 @@ char *aloca_bf(int tamanho, char* memory, FreeMemorySpaceFrame& frame){
 }
 
 char *aloca_nf(int tamanho, char* memory, FreeMemorySpaceFrame& frame){
-  return nullptr;
+  int pointer = (frame.getNextFreeSpace(tamanho));
+
+  if (pointer < 0) {
+    throw_exception("OUT OF MEMORY");
+    return ((char*)(memory - 1));
+  } else {
+    shortOnMemory(tamanho, memory, pointer);
+    shortOnMemory(HASH, memory, pointer + REAL_LENGTH_IN_BYTES_INDIVIDUAL);
+
+    pointer += REAL_LENGTH_IN_BYTES;
+    return ((char*)(pointer + memory));
+  }
 }
 
 
@@ -277,6 +334,8 @@ void meualoc::imprimeDados(){
     printf("[address: %d, length : %d]~>",space->address,space->length);
     space = space->next;
   }
+  printf("\n\nLast Found for Next-Fit: [address: %d, length : %d]\n\n", this->memoryFrame.lastFound->address, this->memoryFrame.lastFound->length);
+
   printf("\nCurrent Memory State : \n");
   for(int i=0;i<length;i++){
     printf("[%d]", this->memoria[i]);
@@ -304,6 +363,10 @@ meualoc::meualoc(int tamanhoMemoria,int politicaMem){
     aloca_backend = (&aloca_bf);
     break;
     case NEXTFIT:
+
+    this->memoryFrame.lastFound = firstSpace;
+    this->memoryFrame.beforeLastFound = nullptr;
+
     aloca_backend = (&aloca_nf);
     break;
     case FIRSTFIT:

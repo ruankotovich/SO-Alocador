@@ -11,6 +11,9 @@ struct FreeMemorySpace{
 
 struct FreeMemorySpaceFrame{
 	FreeMemorySpace *first;
+  FreeMemorySpace *lastFound;
+  FreeMemorySpace *beforeLastFound;
+
 	int fragments;
 	int getFirstFreeSpace(unsigned short length);
 	int getNextFreeSpace(unsigned short length);
