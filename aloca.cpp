@@ -108,7 +108,7 @@ int FreeMemorySpaceFrame::getNextFreeSpace(unsigned short length) {
         this->beforeLastFound = current;
 
         if (current->next)
-          current = current->next;
+        current = current->next;
         else current = this->first;
 
       } else if (current->length == realLength) {
@@ -187,10 +187,15 @@ void FreeMemorySpaceFrame::freeSpace(int address, unsigned short size){
     else { // tem o de trás e o da frente
       coalsceBack->length+=(size+coalsceFront->length);
       coalsceBack->next = coalsceFront->next;
+
+      if(coalsceFront == lastFound){
+        lastFound = coalsceBack->next? coalsceBack->next : this->first;
+        previousSpace = coalsceBack;
+      }
+
       delete(coalsceFront);
     }
   }
-
 }
 
 FreeMemorySpace::FreeMemorySpace(int address_fms, unsigned short length_fms){
