@@ -78,26 +78,25 @@ int FreeMemorySpaceFrame::getFirstFreeSpace(unsigned short length){
   int pointer =0;
   if(length){
     while(current){
+      if(current->length >= realLength){
+        if(current->length == realLength){
+          pointer = current->address;
 
-      if(current->length < realLength){
-        current = current->next;
-      }else if(current->length == realLength){
-        pointer = current->address;
+          if(last){
+            last->next = current->next;
+          }else{
+            this->first = current->next;
+          }
 
-        if(last){
-          last->next = current->next;
+          delete(current);
+
+          return pointer;
         }else{
-          this->first = current->next;
+          pointer = current->address;
+          current->address+=realLength;
+          current->length-=realLength;
+          return pointer;
         }
-
-        delete(current);
-
-        return pointer;
-      }else{
-        pointer = current->address;
-        current->address+=realLength;
-        current->length-=realLength;
-        return pointer;
       }
 
       last = current;
@@ -357,8 +356,8 @@ void meualoc::imprimeDados(){
     space = space->next;
   }
 
-  printf("\nTries : %d\n", this->memoryFrame.tries);
-  printf("\nFails : %d (%.2f%%)\n", this->memoryFrame.fails,((double)this->memoryFrame.fails)*100/this->memoryFrame.tries);
+  printf("\nALlocation Tries : %d\n", this->memoryFrame.tries);
+  printf("\nAllocatin Fails : %d (%.2f%%)\n", this->memoryFrame.fails,((double)this->memoryFrame.fails)*100/this->memoryFrame.tries);
   printf("\nFree Space : %d, difuse in %d regions\n", memory, count);
   printf("\nBigger avaiable space size : %d\n", bigger);
   printf("\nFree Space Length Average : %.2f\n", (double)(memory)/(count));
@@ -396,6 +395,7 @@ meualoc::meualoc(int tamanhoMemoria,int politicaMem){
     case BESTFIT:
     aloca_backend = (&aloca_bf);
     break;
+
     case NEXTFIT:
 
     this->memoryFrame.lastFound = firstSpace;
@@ -403,6 +403,7 @@ meualoc::meualoc(int tamanhoMemoria,int politicaMem){
 
     aloca_backend = (&aloca_nf);
     break;
+
     case FIRSTFIT:
     aloca_backend = (&aloca_ff);
     break;
