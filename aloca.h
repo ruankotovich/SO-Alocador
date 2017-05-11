@@ -1,12 +1,13 @@
 #define BESTFIT 0
 #define FIRSTFIT 1
 #define NEXTFIT 2
+#include <map>
 
 struct FreeMemorySpace{
 	unsigned int address;
 	unsigned int length;
 	FreeMemorySpace *next;
-	FreeMemorySpace(int address_fms, unsigned short length_fms);
+	FreeMemorySpace(int address_fms, int length_fms);
 };
 
 struct FreeMemorySpaceFrame{
@@ -14,7 +15,7 @@ struct FreeMemorySpaceFrame{
   FreeMemorySpace *lastFound;
   FreeMemorySpace *beforeLastFound;
 
-	int fragments;
+	int fails, tries;
 	int getFirstFreeSpace(unsigned short length);
 	int getNextFreeSpace(unsigned short length);
 	int getBestFreeSpace(unsigned short length);
@@ -43,6 +44,7 @@ public:
 
 	//Imprime o numero de elementos na lista de vazios, o maior e a media de tamanhos dos blocos vazios
 	void imprimeDados();
+	void imprimeDados2();
 
 	~meualoc();
 

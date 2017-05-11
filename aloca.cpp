@@ -11,11 +11,22 @@
 
 int FreeMemorySpaceFrame::getBestFreeSpace(unsigned short length){
   FreeMemorySpace* current = this->first;
-  FreeMemorySpace* currentBest = current, *last = nullptr, *lastBest = nullptr;
+  FreeMemorySpace* currentBest = nullptr, *last = nullptr, *lastBest = nullptr;
   int realLength = length+REAL_LENGTH_IN_BYTES;
   int pointer=0;
 
   if(this->first != nullptr){
+    while(current){
+
+      if(current->length >= realLength){
+        currentBest = current;
+        break;
+      }
+
+      last = current;
+      current = current->next;
+    }
+
     while(current){
 
       if(currentBest->length > current->length){
@@ -29,28 +40,30 @@ int FreeMemorySpaceFrame::getBestFreeSpace(unsigned short length){
       current = current->next;
     }
 
-    if(currentBest->length == realLength){
+    if(currentBest){
+      if(currentBest->length == realLength){
 
-      if(lastBest){
+        if(lastBest){
+          pointer = currentBest->address;
+          lastBest->next = currentBest->next;
+        }else{
+          this->first = currentBest->next;
+          pointer = currentBest->address;
+        }
+
+        delete(currentBest);
+
+        return pointer;
+
+      }else if(currentBest->length > realLength){
         pointer = currentBest->address;
-        lastBest->next = currentBest->next;
+        currentBest->address+=realLength;
+        currentBest->length-=realLength;
+
+        return pointer;
       }else{
-        this->first = currentBest->next;
-        pointer = currentBest->address;
+        return -1;
       }
-
-      delete(currentBest);
-
-      return pointer;
-
-    }else if(currentBest->length > realLength){
-      pointer = currentBest->address;
-      currentBest->address+=realLength;
-      currentBest->length-=realLength;
-
-      return pointer;
-    }else{
-      return -1;
     }
   }
   return -1;
@@ -62,11 +75,10 @@ int FreeMemorySpaceFrame::getFirstFreeSpace(unsigned short length){
 
   FreeMemorySpace* current = this->first;
   FreeMemorySpace* last = nullptr;
-
-  int pointer = 0;
-
+  int pointer =0;
   if(length){
     while(current){
+
       if(current->length < realLength){
         current = current->next;
       }else if(current->length == realLength){
@@ -89,6 +101,7 @@ int FreeMemorySpaceFrame::getFirstFreeSpace(unsigned short length){
       }
 
       last = current;
+      current = current->next;
     }
   }
   return -1;
@@ -121,7 +134,6 @@ int FreeMemorySpaceFrame::getNextFreeSpace(unsigned short length) {
         }
 
         lastFound = current->next? current : this->first;
-        printf("\n\nLast Found for Next-Fit: [address: %d, length : %d]\n\n", lastFound->address, lastFound->length);
         delete(current);
 
         return pointer;
@@ -131,7 +143,6 @@ int FreeMemorySpaceFrame::getNextFreeSpace(unsigned short length) {
         current->length-=realLength;
 
         lastFound = current->next? current : this->first;
-        printf("\n\nLast Found for Next-Fit: [address: %d, length : %d]\n\n", lastFound->address, lastFound->length);
         return pointer;
       }
     } while (current != pivot);
@@ -198,7 +209,7 @@ void FreeMemorySpaceFrame::freeSpace(int address, unsigned short size){
   }
 }
 
-FreeMemorySpace::FreeMemorySpace(int address_fms, unsigned short length_fms){
+FreeMemorySpace::FreeMemorySpace(int address_fms, int length_fms){
   this->address = address_fms;
   this->length = length_fms;
   this->next = nullptr;
@@ -207,7 +218,7 @@ FreeMemorySpace::FreeMemorySpace(int address_fms, unsigned short length_fms){
 
 FreeMemorySpaceFrame::FreeMemorySpaceFrame(){
   this->first = nullptr;
-  this->fragments = 0;
+  this->fails = this->tries = 0;
 }
 
 
@@ -259,9 +270,9 @@ unsigned short getShortOnMemory(char* memory, int position){
 
 char *aloca_ff(int tamanho, char* memory, FreeMemorySpaceFrame& frame){
   int pointer = (frame.getFirstFreeSpace(tamanho));
-
+  frame.tries++;
   if(pointer<0){
-    throw_exception("OUT OF MEMORY");
+    frame.fails++;
     return ((char*)(memory-1));
   }else{
     shortOnMemory(tamanho, memory, pointer);
@@ -275,9 +286,9 @@ char *aloca_ff(int tamanho, char* memory, FreeMemorySpaceFrame& frame){
 
 char *aloca_bf(int tamanho, char* memory, FreeMemorySpaceFrame& frame){
   int pointer = (frame.getBestFreeSpace(tamanho));
-
+  frame.tries++;
   if(pointer<0){
-    throw_exception("OUT OF MEMORY");
+    frame.fails++;
     return ((char*)(memory-1));
   }else{
     shortOnMemory(tamanho, memory, pointer);
@@ -290,9 +301,9 @@ char *aloca_bf(int tamanho, char* memory, FreeMemorySpaceFrame& frame){
 
 char *aloca_nf(int tamanho, char* memory, FreeMemorySpaceFrame& frame){
   int pointer = (frame.getNextFreeSpace(tamanho));
-
+  frame.tries++;
   if (pointer < 0) {
-    throw_exception("OUT OF MEMORY");
+    frame.fails++;
     return ((char*)(memory - 1));
   } else {
     shortOnMemory(tamanho, memory, pointer);
@@ -308,7 +319,7 @@ int meualoc::libera(char* ponteiro){
   int location = ((ponteiro)-this->memoria)-REAL_LENGTH_IN_BYTES;
   int length = getShortOnMemory(this->memoria,location);
   int hash = getShortOnMemory(this->memoria, ((ponteiro)-this->memoria)-REAL_LENGTH_IN_BYTES_INDIVIDUAL);
-  if(hash == HASH || ponteiro < this->memoria || ponteiro > this->memoria+(this->length*CHAR_LENGTH_IN_BYTES)){
+  if(hash == HASH || ponteiro > this->memoria || ponteiro < this->memoria+(this->length*CHAR_LENGTH_IN_BYTES)){
     this->memoryFrame.freeSpace(location,length+REAL_LENGTH_IN_BYTES);
     return 1;
   }else{
@@ -332,6 +343,29 @@ char* meualoc::verifica(char* ponteiro,int posicao){
 }
 
 void meualoc::imprimeDados(){
+  FreeMemorySpace* space = this->memoryFrame.first;
+  int count=0, memory=0;
+  int bigger=0;
+  while(space){
+    count++;
+    memory+=space->length;
+
+    if(space->length > bigger){
+      bigger = space->length;
+    }
+
+    space = space->next;
+  }
+
+  printf("\nTries : %d\n", this->memoryFrame.tries);
+  printf("\nFails : %d (%.2f%%)\n", this->memoryFrame.fails,((double)this->memoryFrame.fails)*100/this->memoryFrame.tries);
+  printf("\nFree Space : %d, difuse in %d regions\n", memory, count);
+  printf("\nBigger avaiable space size : %d\n", bigger);
+  printf("\nFree Space Length Average : %.2f\n", (double)(memory)/(count));
+
+}
+
+void meualoc::imprimeDados2(){
   FreeMemorySpace *space = this->memoryFrame.first;
   printf("\n\n---\nCurrent Free Space : \n");
 
@@ -339,15 +373,10 @@ void meualoc::imprimeDados(){
     printf("[address: %d, length : %d]~>",space->address,space->length);
     space = space->next;
   }
-  printf("\n\nLast Found for Next-Fit: [address: %d, length : %d]\n\n", this->memoryFrame.lastFound->address, this->memoryFrame.lastFound->length);
-
-  printf("\nCurrent Memory State : \n");
-  for(int i=0;i<length;i++){
-    printf("[%d]", this->memoria[i]);
-  }
 
   printf("\n---\n\n");
 }
+
 
 char* meualoc::aloca(unsigned short int tamanho){
   return (this->aloca_backend)(tamanho,this->memoria,this->memoryFrame);
