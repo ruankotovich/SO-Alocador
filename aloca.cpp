@@ -158,10 +158,9 @@ void FreeMemorySpaceFrame::freeSpace(int address, unsigned short size){
   FreeMemorySpace *newSpace;
 
   while (currentSpace) {
-
     if (currentSpace->address >= address) {
       if (currentSpace->address == topAddress) {
-        coalsceFront = currentSpace;
+        //coalsceFront = currentSpace;
       }
       break;
     }
@@ -169,11 +168,12 @@ void FreeMemorySpaceFrame::freeSpace(int address, unsigned short size){
     previousSpace = currentSpace;
 
     if ((currentSpace->address + currentSpace->length) == bottomAddressBound) {
-      coalsceBack = currentSpace;
+      //coalsceBack = currentSpace;
     }
 
     currentSpace = currentSpace->next;
   }
+
 
   if (coalsceBack == nullptr) { // não tem o de trás
     if (coalsceFront == nullptr) { // não tem o de trás nem o da frente

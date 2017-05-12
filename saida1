@@ -1,0 +1,30 @@
+
+ALlocation Tries : 5131
+
+Allocatin Fails : 925 (18.03%)
+
+Free Space : 6379537, difuse in 4773 regions
+
+Bigger avaiable space size : 40516
+
+Free Space Length Average : 1336.59
+
+ALlocation Tries : 5131
+
+Allocatin Fails : 1558 (30.36%)
+
+Free Space : 7647982, difuse in 4864 regions
+
+Bigger avaiable space size : 31873
+
+Free Space Length Average : 1572.36
+
+ALlocation Tries : 5136
+
+Allocatin Fails : 2496 (48.60%)
+
+Free Space : 9459108, difuse in 4865 regions
+
+Bigger avaiable space size : 16759
+
+Free Space Length Average : 1944.32

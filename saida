@@ -1,0 +1,32 @@
+Workload 0:
+ALlocation Tries : 5131
+
+Allocatin Fails : 0 (0.00%)
+
+Free Space : 2029964, difuse in 88 regions
+
+Bigger avaiable space size : 1134758
+
+Free Space Length Average : 23067.77
+
+Workload 1:
+ALlocation Tries : 5131
+
+Allocatin Fails : 0 (0.00%)
+
+Free Space : 2312781, difuse in 77 regions
+
+Bigger avaiable space size : 1786368
+
+Free Space Length Average : 30036.12
+
+Workload 2:
+ALlocation Tries : 5136
+
+Allocatin Fails : 4 (0.08%)
+
+Free Space : 1522676, difuse in 33 regions
+
+Bigger avaiable space size : 285733
+
+Free Space Length Average : 46141.70
