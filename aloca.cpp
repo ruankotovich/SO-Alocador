@@ -160,7 +160,7 @@ void FreeMemorySpaceFrame::freeSpace(int address, unsigned short size){
   while (currentSpace) {
     if (currentSpace->address >= address) {
       if (currentSpace->address == topAddress) {
-        //coalsceFront = currentSpace;
+        coalsceFront = currentSpace;
       }
       break;
     }
@@ -168,7 +168,7 @@ void FreeMemorySpaceFrame::freeSpace(int address, unsigned short size){
     previousSpace = currentSpace;
 
     if ((currentSpace->address + currentSpace->length) == bottomAddressBound) {
-      //coalsceBack = currentSpace;
+      coalsceBack = currentSpace;
     }
 
     currentSpace = currentSpace->next;
@@ -376,6 +376,14 @@ void meualoc::imprimeDados2(){
   printf("\n---\n\n");
 }
 
+void meualoc::imprimeDados3(){
+  FreeMemorySpace *space = this->memoryFrame.first;
+  printf("%d\n", this->length);
+  while(space){
+    printf("%d,%d\n",space->address,space->length);
+    space = space->next;
+  }
+}
 
 char* meualoc::aloca(unsigned short int tamanho){
   return (this->aloca_backend)(tamanho,this->memoria,this->memoryFrame);
@@ -384,6 +392,7 @@ char* meualoc::aloca(unsigned short int tamanho){
 meualoc::~meualoc(){
   delete(this->memoria);
 }
+
 
 meualoc::meualoc(int tamanhoMemoria,int politicaMem){
   FreeMemorySpace *firstSpace = new FreeMemorySpace(0, tamanhoMemoria);

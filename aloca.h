@@ -45,7 +45,7 @@ public:
 	//Imprime o numero de elementos na lista de vazios, o maior e a media de tamanhos dos blocos vazios
 	void imprimeDados();
 	void imprimeDados2();
-
+	void imprimeDados3();
 	~meualoc();
 
 

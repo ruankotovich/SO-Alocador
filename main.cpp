@@ -36,5 +36,5 @@ int main(){
     }
   }
 
-  alocador.imprimeDados();
+  alocador.imprimeDados3();
 }
