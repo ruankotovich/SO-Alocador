@@ -111,7 +111,6 @@ int FreeMemorySpaceFrame::getNextFreeSpace(unsigned short length) {
 
   FreeMemorySpace *current = this->lastFound;
   FreeMemorySpace *pivot = this->lastFound;
-  FreeMemorySpace *last = this->beforeLastFound;
   int pointer = 0;
 
   if (length) {
@@ -384,6 +383,7 @@ void meualoc::imprimeDados3(){
     space = space->next;
   }
 }
+
 
 char* meualoc::aloca(unsigned short int tamanho){
   return (this->aloca_backend)(tamanho,this->memoria,this->memoryFrame);

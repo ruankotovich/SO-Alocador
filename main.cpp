@@ -13,6 +13,7 @@ int main(){
 
   while(std::cin >> command && operations){
     --operations;
+
     switch(command){
       case 'A':
       std::cin >> address >> length;
